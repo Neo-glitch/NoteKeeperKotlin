@@ -1,10 +1,12 @@
 package com.neo.notekeeperkotlin
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -14,6 +16,8 @@ import kotlinx.android.synthetic.main.content_main.*
  * displays a selected  note
  */
 class MainActivity : AppCompatActivity() {
+    private val tag = this::class.simpleName
+
     private var notePosition = POSITION_NOT_SET
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,7 +25,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        // array adapter of list of courseInfo obj and list is from hashMap.values.toList()
+        // array adapter(spinner) and list is from hashMap.values.toList()
         val adapterCourses = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
@@ -39,11 +43,17 @@ class MainActivity : AppCompatActivity() {
         if (notePosition != POSITION_NOT_SET) {
             displayNote()
         } else {     // create new Note by adding empty note to dataStore and set notePos to that index
-            DataManager.notes.add(NoteInfo())
-            notePosition = DataManager.notes.lastIndex
+            createNewNote()
         }
 
+        Log.d(tag, "onCreate: ")
     }
+
+    private fun createNewNote() {
+        DataManager.notes.add(NoteInfo())
+        notePosition = DataManager.notes.lastIndex
+    }
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt(NOTE_POSITION, notePosition)
@@ -54,6 +64,14 @@ class MainActivity : AppCompatActivity() {
      * populate the views in this element with note members at this position retrieved
      */
     private fun displayNote() {
+        // makes sure not pos is valid and in list of dm notes list
+        if(notePosition > DataManager.notes.lastIndex){
+            showMessage("Note not found")
+            Log.e(tag, "Invalid note Position: $notePosition, max Valid position: ${DataManager.notes.lastIndex}")
+            return
+        }
+
+        Log.i(tag, "Displaying note for pos: $notePosition")
         val note = DataManager.notes[notePosition]
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
@@ -78,12 +96,20 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> true
             R.id.action_next -> {
-                moveNext()              // moves to next note in list and populate the spinner with assoc course title
+                if(notePosition < DataManager.notes.lastIndex){
+                    moveNext()              // moves to next note in list and populate the spinner with assoc course title
+                } else{
+                    val message = "No more Notes"
+                    showMessage(message)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+
+    private fun showMessage(message: String) =
+        Snackbar.make(textNoteTitle, message, Snackbar.LENGTH_LONG).show()
 
 
     private fun moveNext() {
@@ -106,6 +132,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         saveNote()
         super.onPause()
+        Log.d(tag, "onPause: ")
     }
 
     /**

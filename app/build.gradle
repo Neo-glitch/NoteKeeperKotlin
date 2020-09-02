@@ -34,14 +34,26 @@ android {
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // needed to get the class name and assign the TAG var, rather than using hardCodedString
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+
+    // name group: exact lib: version of the lib
     implementation 'androidx.core:core-ktx:1.3.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.0'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
+
+    // tesImplementation is for only jVM test
     testImplementation 'junit:junit:4.12'
+
+    // androidTestImplemetation is specific for only UI tests
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    // Added by me
+    androidTestImplementation 'androidx.test:rules:1.2.0'
 
 }
