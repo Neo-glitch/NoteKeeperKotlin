@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.content_main.*
 /**
  * displays a selected  note
  */
-class MainActivity : AppCompatActivity() {
+class NoteActivity : AppCompatActivity() {
     private val tag = this::class.simpleName
 
     private var notePosition = POSITION_NOT_SET
