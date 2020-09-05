@@ -7,13 +7,24 @@ import android.view.MenuItem
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_items.*
 import kotlinx.android.synthetic.main.app_bar_items.*
 import kotlinx.android.synthetic.main.content_items.*
+import kotlinx.android.synthetic.main.nav_header_items.*
 
 class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    // lazy prop i.e ain't init until it's been used (e.g in onCreate()).
+    private val noteLayoutManager by lazy {LinearLayoutManager(this)}
+    private val noteRecyclerAdapter by lazy {NoteRecyclerAdapter(this, DataManager.notes)}
+
+    private val courseLayoutManager by lazy { GridLayoutManager(this, 2) }
+    private val courseRecyclerAdapter by lazy { CourseRecyclerAdapter(this, DataManager.courses.values.toList()) }
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,9 +36,7 @@ class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         }
 
 
-        // sets up the rv
-        listItems.layoutManager = LinearLayoutManager(this)
-        listItems.adapter = NoteRecyclerAdapter(this, DataManager.notes)
+        displayNotes()
 
 
         // sets up toggle for the drawerLayout and navView
@@ -37,6 +46,24 @@ class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         toggle.syncState()        // tells toggle the state of the drawer
 
         nav_view.setNavigationItemSelectedListener(this)
+    }
+
+    private fun displayNotes() {
+        // sets up the rv
+        listItems.layoutManager = noteLayoutManager
+        listItems.adapter = noteRecyclerAdapter
+
+        // makes sure the item in nav View is selected when launch app
+        nav_view.menu.findItem(R.id.nav_notes).isChecked = true
+    }
+
+    private fun displayCourses() {
+        // sets up the rv
+        listItems.layoutManager = courseLayoutManager
+        listItems.adapter = courseRecyclerAdapter
+
+        // makes sure the item in nav View is selected when launch app
+        nav_view.menu.findItem(R.id.nav_courses).isChecked = true
     }
 
     override fun onResume() {
@@ -71,27 +98,25 @@ class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
         when (item.itemId) {
-            R.id.nav_camera -> {
-                // Handle the camera action
+            R.id.nav_notes -> {
+                displayNotes()
             }
-            R.id.nav_gallery -> {
-
-            }
-            R.id.nav_slideshow -> {
-
-            }
-            R.id.nav_manage -> {
-
+            R.id.nav_courses -> {
+                displayCourses()
             }
             R.id.nav_share -> {
-
+                handleSelection("share")
             }
             R.id.nav_send -> {
-
+                handleSelection("send")
             }
         }
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
+    }
+
+    private fun handleSelection(message: String) {
+        Snackbar.make(textView, message, Snackbar.LENGTH_LONG).show()
     }
 }
