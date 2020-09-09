@@ -2,7 +2,7 @@ package com.neo.notekeeperkotlin
 
 
 /**
- * class courses and noteData and is a singleton class i.e object
+ * class handles courses and noteData and is a singleton class i.e object
  */
 object DataManager {
     val courses = HashMap<String, CourseInfo>()
@@ -21,13 +21,17 @@ object DataManager {
         return notes
     }
 
+
+
+    // vararg in params means that fun accepts variable number of params
     fun loadNotes(vararg noteIds: Int): List<NoteInfo> {
         simulateLoadDelay()
         val noteList: List<NoteInfo>
-
+        // if no id passed it ret full list of notes
         if(noteIds.isEmpty())
             noteList = notes
         else {
+            // else create list matching size to contain just noteIds passed and put the notes assoc there
             noteList = ArrayList<NoteInfo>(noteIds.size)
             for(noteId in noteIds)
                 noteList.add(notes[noteId])
@@ -42,7 +46,9 @@ object DataManager {
     fun idOfNote(note: NoteInfo) = notes.indexOf(note)
 
     fun noteIdsAsIntArray(notes: List<NoteInfo>): IntArray {
+        // int Array that same size as list of Notes
         val noteIds = IntArray(notes.size)
+
         for(index in 0..notes.lastIndex)
             noteIds[index] = idOfNote(notes[index])
         return noteIds

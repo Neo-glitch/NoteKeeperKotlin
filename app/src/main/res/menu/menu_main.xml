@@ -9,6 +9,11 @@
         android:title="Next"
         app:showAsAction="ifRoom|withText" />
     <item
+        android:id="@+id/action_get_together"
+        android:icon="@drawable/ic_people_white_24dp"
+        android:title="Get together"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_settings"
         android:orderInCategory="101"
         android:title="@string/action_settings"

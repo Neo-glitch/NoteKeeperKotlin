@@ -1,5 +1,6 @@
 package com.neo.notekeeperkotlin
 
+import android.os.Bundle
 import androidx.lifecycle.ViewModel
 
 
@@ -8,7 +9,12 @@ import androidx.lifecycle.ViewModel
  */
 class ItemsActivityViewModel : ViewModel(){
 
+    // boolean to tell when ViewModel is newly created inorder to avoid doing lengthy data operation like getting notes from DM
+    // when the activity is not destroyed due to sys cleanUp
+    var isNewlyCreated = true;
+
     var navDrawerDisplaySelectionName = "com.neo.notekeeperkotlin.ItemActivityViewModel.navDrawerDisplaySelection"
+    var recentlyViewedNotesIdsName = "com.neo.notekeeperkotlin.ItemActivityViewModel.recentlyViewedNoteIds"
 
     // prop to hold id of last nav menu item clicked on
     var navDrawerDisplaySelection = R.id.nav_notes
@@ -35,5 +41,23 @@ class ItemsActivityViewModel : ViewModel(){
                 recentlyViewedNotes[index + 1] = recentlyViewedNotes[index]
             recentlyViewedNotes[0] = note
         }
+    }
+
+    fun saveState(outState: Bundle) {
+        outState.putInt(navDrawerDisplaySelectionName, navDrawerDisplaySelection)
+        // gets ids of notes stored in param passed
+        val noteIds = DataManager.noteIdsAsIntArray(recentlyViewedNotes)
+        outState.putIntArray(recentlyViewedNotesIdsName, noteIds)
+
+    }
+
+    fun restoreState(savedInstanceState: Bundle) {
+        navDrawerDisplaySelection = savedInstanceState.getInt(navDrawerDisplaySelectionName)
+        val notedIds = savedInstanceState.getIntArray(recentlyViewedNotesIdsName)
+
+        // "*" is spread operator and makes array compatible with var length arg list
+        val noteList = DataManager.loadNotes(*notedIds!!)
+        recentlyViewedNotes.addAll(noteList)
+
     }
 }

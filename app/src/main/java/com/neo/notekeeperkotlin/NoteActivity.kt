@@ -6,15 +6,18 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.LifecycleOwner
 import com.google.android.material.snackbar.Snackbar
+
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
-
-
-class NoteActivity : AppCompatActivity() {
-    private val tag = this::class.simpleName
+class NoteActivity : AppCompatActivity(), LifecycleOwner{
+    private val TAG = this::class.simpleName
     private var notePosition = POSITION_NOT_SET
+
+    private val noteGetTogetherHelper = NoteGetTogetherHelper(this, lifecycle)
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,7 +39,16 @@ class NoteActivity : AppCompatActivity() {
         else {
             createNewNote()
         }
-        Log.d(tag, "onCreate")
+        Log.d(TAG, "onCreate")
+    }
+
+    override fun onStart() {
+        super.onStart()
+
+    }
+
+    override fun onStop() {
+        super.onStop()
     }
 
     private fun createNewNote() {
@@ -69,11 +81,15 @@ class NoteActivity : AppCompatActivity() {
                 }
                 true
             }
+            R.id.action_get_together -> {
+
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
     private fun displayNote() {
-        Log.i(tag, "Displaying note for position $notePosition")
+        Log.i(TAG, "Displaying note for position $notePosition")
         val note = DataManager.loadNote(notePosition)
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
@@ -90,13 +106,12 @@ class NoteActivity : AppCompatActivity() {
     private fun moveNext() {
         ++notePosition
         displayNote()
-
-        // invalidates current menu calling onPrepareOptionsMenu
+        // calls onPrepareOptionsMenu to recreate menu
         invalidateOptionsMenu()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        // if at last note, change icon and disable menu item
+        // changes icon and disables it if we at last note
         if(DataManager.isLastNoteId(notePosition)) {
             val menuItem = menu?.findItem(R.id.action_next)
             if(menuItem != null) {
@@ -111,7 +126,7 @@ class NoteActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         saveNote()
-        Log.d(tag, "onPause")
+        Log.d(TAG, "onPause")
     }
 
     private fun saveNote() {

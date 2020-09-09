@@ -64,9 +64,12 @@ class ItemsActivity : AppCompatActivity(),
             startActivity(Intent(this, NoteActivity::class.java))
         }
 
-        if(savedInstanceState != null){
-            viewModel.navDrawerDisplaySelection = savedInstanceState.getInt(viewModel.navDrawerDisplaySelectionName)
+        // true only when sys cleans up activity thereby destroying ViewModel
+        if(savedInstanceState != null && viewModel.isNewlyCreated){
+            viewModel.restoreState(savedInstanceState)
         }
+        viewModel.isNewlyCreated = false
+
         handleDisplaySelection(viewModel.navDrawerDisplaySelection)
 
         // sets toggle for DrawerLayout
@@ -79,7 +82,8 @@ class ItemsActivity : AppCompatActivity(),
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(viewModel.navDrawerDisplaySelectionName, viewModel.navDrawerDisplaySelection)
+        // saves in bundle using the ViewModel method
+        viewModel.saveState(outState)
         super.onSaveInstanceState(outState)
     }
 
