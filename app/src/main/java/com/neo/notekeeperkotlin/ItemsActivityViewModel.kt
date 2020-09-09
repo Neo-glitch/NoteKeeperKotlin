@@ -2,7 +2,13 @@ package com.neo.notekeeperkotlin
 
 import androidx.lifecycle.ViewModel
 
+
+/**
+ * NOTE: ViewModel classes doesn't survive activity destruction due to sys cleanUp( for this use onSaveInstanceState)
+ */
 class ItemsActivityViewModel : ViewModel(){
+
+    var navDrawerDisplaySelectionName = "com.neo.notekeeperkotlin.ItemActivityViewModel.navDrawerDisplaySelection"
 
     // prop to hold id of last nav menu item clicked on
     var navDrawerDisplaySelection = R.id.nav_notes

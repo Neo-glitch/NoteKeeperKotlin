@@ -62,9 +62,11 @@ class ItemsActivity : AppCompatActivity(),
 
         fab.setOnClickListener { view ->
             startActivity(Intent(this, NoteActivity::class.java))
-
         }
 
+        if(savedInstanceState != null){
+            viewModel.navDrawerDisplaySelection = savedInstanceState.getInt(viewModel.navDrawerDisplaySelectionName)
+        }
         handleDisplaySelection(viewModel.navDrawerDisplaySelection)
 
         // sets toggle for DrawerLayout
@@ -74,6 +76,11 @@ class ItemsActivity : AppCompatActivity(),
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(viewModel.navDrawerDisplaySelectionName, viewModel.navDrawerDisplaySelection)
+        super.onSaveInstanceState(outState)
     }
 
     private fun displayNotes() {
