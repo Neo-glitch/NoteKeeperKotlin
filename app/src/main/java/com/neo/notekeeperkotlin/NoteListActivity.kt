@@ -9,6 +9,10 @@ import kotlinx.android.synthetic.main.activity_main.toolbar
 import kotlinx.android.synthetic.main.activity_note_list.*
 import kotlinx.android.synthetic.main.content_note_list.*
 
+
+/**
+ * shows list of notes
+ */
 class NoteListActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,8 +27,7 @@ class NoteListActivity : AppCompatActivity() {
 
         listItems.layoutManager = LinearLayoutManager(this)
 
-        listItems.adapter = NoteRecyclerAdapter(this, DataManager.notes)
-
+        listItems.adapter = NoteRecyclerAdapter(this, DataManager.loadNotes())
     }
 
     override fun onResume() {

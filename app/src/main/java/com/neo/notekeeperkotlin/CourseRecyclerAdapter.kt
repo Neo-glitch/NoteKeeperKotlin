@@ -9,7 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 
 
-
+/**
+ * custom adapter for Courses
+ */
 class CourseRecyclerAdapter(private val context: Context, private val courses: List<CourseInfo>) :
         RecyclerView.Adapter<CourseRecyclerAdapter.ViewHolder>() {
     private val layoutInflater = LayoutInflater.from(context)
@@ -31,7 +33,7 @@ class CourseRecyclerAdapter(private val context: Context, private val courses: L
         var coursePosition = 0
         init {
             itemView?.setOnClickListener {
-                Snackbar.make(it, courses[coursePosition]?.title, Snackbar.LENGTH_LONG).show()
+                Snackbar.make(it, courses[coursePosition].title, Snackbar.LENGTH_LONG).show()
             }
         }
     }

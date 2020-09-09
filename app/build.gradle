@@ -46,6 +46,11 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
 
+    //ViewModel lib for androidX
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
+
+
     // tesImplementation is for only jVM test
     testImplementation 'junit:junit:4.12'
 
