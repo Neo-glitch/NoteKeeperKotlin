@@ -18,7 +18,8 @@
         <activity
             android:name=".NoteActivity"
             android:label="Edit Note"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:parentActivityName=".ItemsActivity">
         </activity>
 
         <activity android:name=".ItemsActivity"
@@ -28,6 +29,13 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!--   Special activity     -->
+        <activity android:name=".NoteQuickViewActivity"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:excludeFromRecents="true">
         </activity>
     </application>
 

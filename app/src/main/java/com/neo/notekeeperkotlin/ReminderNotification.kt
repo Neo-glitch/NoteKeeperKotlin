@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
+import androidx.core.app.TaskStackBuilder
 
 /**
  * Helper class for showing and canceling reminder
@@ -32,7 +33,20 @@ object ReminderNotification {
    * @see .cancel
    */
   fun notify(context: Context, titleText: String,
-             noteText: String, number: Int) {
+             noteText: String, notePosition: Int) {
+
+      // intent and pending for specialActivity
+      val intent = NoteQuickViewActivity.getIntent(context, notePosition)
+      intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+      val pendingIntentSpecial = PendingIntent.getActivity(context,
+      0, intent,
+      PendingIntent.FLAG_UPDATE_CURRENT)
+
+      val pendingIntent = TaskStackBuilder.create(context)
+          // intent to go to and also adds the intent parent and the parents parents... for best backStack exp
+          .addNextIntentWithParentStack(intent)
+          .getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
 
     val shareIntent = PendingIntent.getActivity(context,
         0,
@@ -68,12 +82,7 @@ object ReminderNotification {
 
         // Set the pending intent to be initiated when the user touches
         // the notification.
-        .setContentIntent(
-            PendingIntent.getActivity(
-                context,
-                0,
-                Intent(context, ItemsActivity::class.java),
-                PendingIntent.FLAG_UPDATE_CURRENT))
+        .setContentIntent(pendingIntentSpecial)
 
         // Automatically dismiss the notification when it is touched.
         .setAutoCancel(true)
