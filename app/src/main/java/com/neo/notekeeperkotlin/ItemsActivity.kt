@@ -1,6 +1,11 @@
 package com.neo.notekeeperkotlin
 
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -24,9 +29,8 @@ import kotlinx.android.synthetic.main.content_note_list.*
  * shows list of notes along and houses the navDrawer
  */
 class ItemsActivity : AppCompatActivity(),
-        NavigationView.OnNavigationItemSelectedListener,
+    NavigationView.OnNavigationItemSelectedListener,
     NoteRecyclerAdapter.OnNoteSelectedListener {
-
 
 
     private val noteLayoutManager by lazy {
@@ -65,7 +69,7 @@ class ItemsActivity : AppCompatActivity(),
         }
 
         // true only when sys cleans up activity thereby destroying ViewModel
-        if(savedInstanceState != null && viewModel.isNewlyCreated){
+        if (savedInstanceState != null && viewModel.isNewlyCreated) {
             viewModel.restoreState(savedInstanceState)
         }
         viewModel.isNewlyCreated = false
@@ -74,17 +78,36 @@ class ItemsActivity : AppCompatActivity(),
 
         // sets toggle for DrawerLayout
         val toggle = ActionBarDrawerToggle(
-                this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
+            this,
+            drawer_layout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
         nav_view.setNavigationItemSelectedListener(this)
+        registerNotificationChannel()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         // saves in bundle using the ViewModel method
         viewModel.saveState(outState)
         super.onSaveInstanceState(outState)
+    }
+
+    private fun registerNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+
+            // creates the notif channel
+            val channel = NotificationChannel(ReminderNotification.REMINDER_CHANNEL,
+                "NoteReminders",    // what user will see when comm with notif channel in appSettings
+                NotificationManager.IMPORTANCE_DEFAULT)
+            nm.createNotificationChannel(channel)
+
+        }
     }
 
     private fun displayNotes() {
@@ -114,6 +137,7 @@ class ItemsActivity : AppCompatActivity(),
         super.onResume()
         listItems.adapter?.notifyDataSetChanged()
     }
+
 
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
@@ -165,8 +189,8 @@ class ItemsActivity : AppCompatActivity(),
     /**
      * used to get list to show based on based on item passed as arg
      */
-    fun handleDisplaySelection(itemId : Int){
-        when(itemId){
+    fun handleDisplaySelection(itemId: Int) {
+        when (itemId) {
             R.id.nav_notes -> {
                 displayNotes()
             }
@@ -182,8 +206,6 @@ class ItemsActivity : AppCompatActivity(),
     override fun onNoteSelected(note: NoteInfo) {
         viewModel.addToRecentlyViewedNotes(note)
     }
-
-
 
 
     private fun handleSelection(message: String) {

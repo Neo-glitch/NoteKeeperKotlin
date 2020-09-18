@@ -1,23 +1,18 @@
 package com.neo.notekeeperkotlin
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LifecycleOwner
-import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
-class NoteActivity : AppCompatActivity(), LifecycleOwner{
-    private val TAG = this::class.simpleName
+class NoteActivity : AppCompatActivity() {
     private var notePosition = POSITION_NOT_SET
-
-    private val noteGetTogetherHelper = NoteGetTogetherHelper(this, lifecycle)
-
+    private var isNewNote = false
+    private var isCancelling = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,32 +32,29 @@ class NoteActivity : AppCompatActivity(), LifecycleOwner{
         if(notePosition != POSITION_NOT_SET)
             displayNote()
         else {
-            createNewNote()
+            isNewNote = true
+            DataManager.notes.add(NoteInfo())
+            notePosition = DataManager.notes.lastIndex
         }
-        Log.d(TAG, "onCreate")
-    }
-
-    override fun onStart() {
-        super.onStart()
-
-    }
-
-    override fun onStop() {
-        super.onStop()
-    }
-
-    private fun createNewNote() {
-        notePosition = DataManager.addNote(NoteInfo())
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putInt(NOTE_POSITION, notePosition)
+        outState?.putInt(NOTE_POSITION, notePosition)
+    }
+
+    private fun displayNote() {
+        val note = DataManager.notes[notePosition]
+        textNoteTitle.setText(note.title)
+        textNoteText.setText(note.text)
+
+        val coursePosition = DataManager.courses.values.indexOf(note.course)
+        spinnerCourses.setSelection(coursePosition)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
+        menuInflater.inflate(R.menu.menu_note, menu)
         return true
     }
 
@@ -71,48 +63,38 @@ class NoteActivity : AppCompatActivity(), LifecycleOwner{
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
-            R.id.action_settings -> true
-            R.id.action_next -> {
-                if(DataManager.isLastNoteId(notePosition)) {
-                    val message = "No more notes"
-                    showMessage(message)
-                } else {
-                    moveNext()
-                }
+            R.id.action_reminder -> {
+                // calls notif helper class to display notification
+                ReminderNotification.notify(this,
+                    "Reminder",
+                    getString(R.string.reminder_body,
+                        DataManager.notes[notePosition].title),
+                    notePosition
+                )
                 true
             }
-            R.id.action_get_together -> {
-                noteGetTogetherHelper.sendMessage(DataManager.loadNote(notePosition))
+            R.id.action_cancel -> {
+                isCancelling = true
+                finish()
+                true
+            }
+            R.id.action_next -> {
+                moveNext()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
-    private fun displayNote() {
-        Log.i(TAG, "Displaying note for position $notePosition")
-        val note = DataManager.loadNote(notePosition)
-        textNoteTitle.setText(note.title)
-        textNoteText.setText(note.text)
-
-        val coursePosition = DataManager.courses.values.indexOf(note.course)
-        spinnerCourses.setSelection(coursePosition)
-    }
-
-    private fun showMessage(message: String) {
-        Snackbar.make(textNoteTitle, message, Snackbar.LENGTH_LONG).show()
-    }
-
 
     private fun moveNext() {
+        saveNote()
         ++notePosition
         displayNote()
-        // calls onPrepareOptionsMenu to recreate menu
         invalidateOptionsMenu()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        // changes icon and disables it if we at last note
-        if(DataManager.isLastNoteId(notePosition)) {
+        if(notePosition >= DataManager.notes.lastIndex) {
             val menuItem = menu?.findItem(R.id.action_next)
             if(menuItem != null) {
                 menuItem.icon = getDrawable(R.drawable.ic_block_white_24dp)
@@ -125,12 +107,17 @@ class NoteActivity : AppCompatActivity(), LifecycleOwner{
 
     override fun onPause() {
         super.onPause()
-        saveNote()
-        Log.d(TAG, "onPause")
+        when {
+            isCancelling -> {
+                if(isNewNote)
+                    DataManager.notes.removeAt(notePosition)
+            }
+            else -> saveNote()
+        }
     }
 
     private fun saveNote() {
-        val note = DataManager.loadNote(notePosition)
+        val note = DataManager.notes[notePosition]
         note.title = textNoteTitle.text.toString()
         note.text = textNoteText.text.toString()
         note.course = spinnerCourses.selectedItem as CourseInfo

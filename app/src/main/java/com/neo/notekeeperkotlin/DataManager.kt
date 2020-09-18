@@ -6,7 +6,7 @@ package com.neo.notekeeperkotlin
  */
 object DataManager {
     val courses = HashMap<String, CourseInfo>()
-    private val notes = ArrayList<NoteInfo>()
+    val notes = ArrayList<NoteInfo>()
 
     /**
      * called when object of this class is created
