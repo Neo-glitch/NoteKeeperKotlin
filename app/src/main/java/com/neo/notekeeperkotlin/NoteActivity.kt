@@ -5,6 +5,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -36,6 +37,10 @@ class NoteActivity : AppCompatActivity() {
             DataManager.notes.add(NoteInfo())
             notePosition = DataManager.notes.lastIndex
         }
+
+        val commentsAdapter = CommentRecyclerAdapter(this, DataManager.notes[notePosition])
+        commentsList.layoutManager = LinearLayoutManager(this)
+        commentsList.adapter = commentsAdapter
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -64,13 +69,15 @@ class NoteActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_reminder -> {
-                // calls notif helper class to display notification
-                ReminderNotification.notify(this,
-                    "Reminder",
-                    getString(R.string.reminder_body,
-                        DataManager.notes[notePosition].title),
+//                // calls notif helper class to display notification
+//                ReminderNotification.notify(this,
+//                    "Reminder",
+//                    getString(R.string.reminder_body,
+//                        DataManager.notes[notePosition].title),
+//                    notePosition)
+                ReminderNotification.notify(this, DataManager.notes[notePosition],
                     notePosition
-                )
+                    )
                 true
             }
             R.id.action_cancel -> {
