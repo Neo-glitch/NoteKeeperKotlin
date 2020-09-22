@@ -1,5 +1,6 @@
 package com.neo.notekeeperkotlin
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -15,22 +16,30 @@ class NoteActivity : AppCompatActivity() {
     private var isNewNote = false
     private var isCancelling = false
 
+    // the note color
+    private var noteColor: Int = Color.TRANSPARENT
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        val adapterCourses = ArrayAdapter<CourseInfo>(this,
-                android.R.layout.simple_spinner_item,
-                DataManager.courses.values.toList())
+        val adapterCourses = ArrayAdapter<CourseInfo>(
+            this,
+            android.R.layout.simple_spinner_item,
+            DataManager.courses.values.toList()
+        )
         adapterCourses.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
         spinnerCourses.adapter = adapterCourses
 
-        notePosition = savedInstanceState?.getInt(NOTE_POSITION, POSITION_NOT_SET) ?:
-                intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET)
+        notePosition =
+            savedInstanceState?.getInt(NOTE_POSITION, POSITION_NOT_SET) ?: intent.getIntExtra(
+                NOTE_POSITION,
+                POSITION_NOT_SET
+            )
 
-        if(notePosition != POSITION_NOT_SET)
+        if (notePosition != POSITION_NOT_SET)
             displayNote()
         else {
             isNewNote = true
@@ -38,20 +47,29 @@ class NoteActivity : AppCompatActivity() {
             notePosition = DataManager.notes.lastIndex
         }
 
+        // init of comments adapter and the rv used for it
         val commentsAdapter = CommentRecyclerAdapter(this, DataManager.notes[notePosition])
         commentsList.layoutManager = LinearLayoutManager(this)
         commentsList.adapter = commentsAdapter
+
+        // color -> . is the lambda exp and param passed is the noteColor value as color
+        colorSelector.addListener {color ->
+            noteColor = color
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState?.putInt(NOTE_POSITION, notePosition)
+        outState.putInt(NOTE_POSITION, notePosition)
     }
 
     private fun displayNote() {
         val note = DataManager.notes[notePosition]
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
+        // sets the customView colorSwatch color
+        colorSelector.selectedColorValue = note.color
+        noteColor = note.color
 
         val coursePosition = DataManager.courses.values.indexOf(note.course)
         spinnerCourses.setSelection(coursePosition)
@@ -75,9 +93,10 @@ class NoteActivity : AppCompatActivity() {
 //                    getString(R.string.reminder_body,
 //                        DataManager.notes[notePosition].title),
 //                    notePosition)
-                ReminderNotification.notify(this, DataManager.notes[notePosition],
+                ReminderNotification.notify(
+                    this, DataManager.notes[notePosition],
                     notePosition
-                    )
+                )
                 true
             }
             R.id.action_cancel -> {
@@ -101,9 +120,9 @@ class NoteActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        if(notePosition >= DataManager.notes.lastIndex) {
+        if (notePosition >= DataManager.notes.lastIndex) {
             val menuItem = menu?.findItem(R.id.action_next)
-            if(menuItem != null) {
+            if (menuItem != null) {
                 menuItem.icon = getDrawable(R.drawable.ic_block_white_24dp)
                 menuItem.isEnabled = false
             }
@@ -116,7 +135,7 @@ class NoteActivity : AppCompatActivity() {
         super.onPause()
         when {
             isCancelling -> {
-                if(isNewNote)
+                if (isNewNote)
                     DataManager.notes.removeAt(notePosition)
             }
             else -> saveNote()
@@ -128,6 +147,7 @@ class NoteActivity : AppCompatActivity() {
         note.title = textNoteTitle.text.toString()
         note.text = textNoteText.text.toString()
         note.course = spinnerCourses.selectedItem as CourseInfo
+        note.color = this.noteColor
 
         // sends broadcast to the appWidget
         NoteKeeperAppWidget.sendRefreshBroadcast(this)

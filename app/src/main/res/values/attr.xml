@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ColorSelector">
+        <!-- attr to  set and "reference is used since ref a value from another file(i.e an array of colors here)-->
+        <attr name="colors" format="reference"/>
+    </declare-styleable>
+</resources>

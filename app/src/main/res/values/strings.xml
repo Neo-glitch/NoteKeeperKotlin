@@ -12,4 +12,15 @@
     <string name="reminder_body">Review %1$s</string>
     <string name="appwidget_text">NoteKeeper</string>
     <string name="add_widget">Add widget</string>
+
+    <!-- values to be used by customView for setting the color value -->
+    <string-array name="note_color_array">
+        <item>#e57373</item>
+        <item>#ba68c8</item>
+        <item>#64b5f6</item>
+        <item>#81c784</item>
+        <item>#fff176</item>
+        <item>#ffb74d</item>
+        <item>#90a4ae</item>
+    </string-array>
 </resources>

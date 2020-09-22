@@ -45,6 +45,7 @@
         app:layout_constraintTop_toBottomOf="@+id/spinnerCourses" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/commentLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -60,10 +61,27 @@
         android:id="@+id/commentsList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="18dp"
-        app:layout_constraintTop_toBottomOf="@id/commentLabel"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="130dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintVertical_bias="0"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textNoteText" />
+
+    <TextView
+        android:id="@+id/colorSelectorLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Note Color"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/textNoteText"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <com.neo.notekeeperkotlin.ColorSelector
+        android:id="@+id/colorSelector"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/colorSelectorLabel"
+        app:colors="@array/note_color_array"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
