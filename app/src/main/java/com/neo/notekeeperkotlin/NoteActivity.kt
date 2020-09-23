@@ -52,10 +52,17 @@ class NoteActivity : AppCompatActivity() {
         commentsList.layoutManager = LinearLayoutManager(this)
         commentsList.adapter = commentsAdapter
 
-        // color -> . is the lambda exp and param passed is the noteColor value as color
-        colorSelector.addListener {color ->
-            noteColor = color
+
+//        // color -> . is the lambda exp and param passed is the noteColor value as color
+//        // lamda function updates noteColor var with param value(color)
+//        colorSelector.addListener {color ->
+//            noteColor = color
+//        }
+
+        colorSelector.addListener {
+            noteColor = it
         }
+
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -67,7 +74,7 @@ class NoteActivity : AppCompatActivity() {
         val note = DataManager.notes[notePosition]
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
-        // sets the customView colorSwatch color
+        // sets the customView colorSwatch color, based on save Note color value
         colorSelector.selectedColorValue = note.color
         noteColor = note.color
 
