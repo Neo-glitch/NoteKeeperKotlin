@@ -1,13 +1,16 @@
-<!--layout for the fully CustomView-->
+<!--layout for preview of the fully CustomView-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <com.neo.notekeeperkotlin.ColorDialView
-        android:layout_width="300dp"
-        android:layout_height="300dp"
-        android:paddingLeft="20dp"
-        android:paddingBottom="40dp"/>
+        android:layout_width="80dp"
+        android:layout_height="wrap_content"
+        android:paddingLeft="30dp"
+        android:paddingBottom="30dp"
+        app:scaleToFit="true"
+        app:tickPadding="100dp"
+        app:tickRadius="20dp" />
 
 </FrameLayout>

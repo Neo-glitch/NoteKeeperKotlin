@@ -40,8 +40,12 @@ class ColorDialView @JvmOverloads constructor(
 
     private var extraPadding = toDp(30)             // padding
     private var tickSize = toDp(10).toFloat()       // TickMarks size
-    private var angleBetweenColors =
-        0f                   // angle btw each tickMark, and angle needed to rotate canvas based on num_color
+    private var angleBetweenColors = 0f                   // angle btw each tickMark, and angle needed to rotate canvas based on num_color
+
+    // the scale value and the scaled tickMark Size
+    private var scale = 1f
+    private var tickSizeScaled = tickSize * scale
+    private var scaleToFit = false
 
     // pre-computed padding values, for the drawable plus extra padding for color tickMarks
     // can be used to know where to draw the dial drawable
@@ -62,17 +66,34 @@ class ColorDialView @JvmOverloads constructor(
 
 
     init {
+        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ColorDialView)
+        try {
+            // grabs ColorDialView_colors attr
+            val customColors = typedArray.getTextArray(R.styleable.ColorDialView_colors)?.map {
+                Color.parseColor(it.toString())
+            } as ArrayList<Int>?
+            customColors?.let {
+                colors = customColors
+            }
+            // grabs dial diameter custom attr, where def value is "toDp(100)"
+            dialDiameter = typedArray.getDimension(R.styleable.ColorDialView_dialDiameter, toDp(100).toFloat()).toInt()
+            extraPadding = typedArray.getDimension(R.styleable.ColorDialView_tickPadding, toDp(30).toFloat()).toInt()
+            tickSize = typedArray.getDimension(R.styleable.ColorDialView_tickRadius, toDp(10).toFloat())
+            scaleToFit = typedArray.getBoolean(R.styleable.ColorDialView_scaleToFit, false)
+        } finally {
+            typedArray.recycle()
+        }
+
         dialDrawable = context.getDrawable(R.drawable.ic_dial).also {
-            // sets the bounds of drawable and the tint
-            it?.bounds = getCenteredBounds(dialDiameter)
+            it?.bounds = getCenteredBounds((dialDiameter * scale).toInt())
             it?.setTint(Color.DKGRAY)
         }
         noColorDrawable = context.getDrawable(R.drawable.ic_no_color).also {
-            it?.bounds = getCenteredBounds(tickSize.toInt(), 2f)
+            it?.bounds = getCenteredBounds((tickSize * scale).toInt(), 2f)
         }
         colors.add(0, Color.TRANSPARENT)
         angleBetweenColors = 360f / colors.size
-        refreshValues()
+        refreshValues(true)
     }
 
     /**
@@ -84,10 +105,48 @@ class ColorDialView @JvmOverloads constructor(
         return Rect(-half, -half, half, half)
     }
 
+
+    // width and heightMeasureSpec params is width and height ret by the sys to us
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        if(scaleToFit){
+            // updates all fim with default 1f scale, since it might fit
+            refreshValues(false)
+            val specWidth = MeasureSpec.getSize(widthMeasureSpec)
+            val specHeight = MeasureSpec.getSize(heightMeasureSpec)
+
+            // gets space left to work with after removing padding
+            val workingWidth = specWidth - paddingLeft - paddingRight
+            val workingHeight = specHeight - paddingTop - paddingBottom
+            scale = if(workingWidth < workingHeight){
+                // if statement is used since we want to get the shortest dim to use in getting scale
+                (workingWidth) / (horizontalSize - paddingLeft - paddingRight)
+            } else {
+                (workingHeight) / (verticalSize - paddingTop - paddingBottom)
+            }
+            dialDrawable?.let {
+                it.bounds = getCenteredBounds((dialDiameter * scale).toInt())
+            }
+            noColorDrawable?.let {
+                it.bounds = getCenteredBounds((tickSize * scale).toInt(), 2f)
+            }
+            val width = resolveSizeAndState(
+                (horizontalSize * scale).toInt(), widthMeasureSpec, 0
+            )
+            val height = resolveSizeAndState(
+                (verticalSize * scale).toInt(), heightMeasureSpec, 0
+            )
+            refreshValues(true)
+            setMeasuredDimension(width, height)
+        } else{
+            // resolve the width and height and then we set the desired dimension to resolved width and height
+            val width = resolveSizeAndState(horizontalSize.toInt(), widthMeasureSpec, 0)
+            val height = resolveSizeAndState(verticalSize.toInt(), heightMeasureSpec, 0)
+            setMeasuredDimension(width, height)
+        }
+    }
+
     override fun onDraw(canvas: Canvas) {
         val saveCount = canvas.save()
-
-        // loops through each color getting the index and value for the color
         colors.forEachIndexed { i, color ->
             if (i == 0) {
                 canvas.translate(centerHorizontal, tickPositionVertical)
@@ -96,7 +155,7 @@ class ColorDialView @JvmOverloads constructor(
                 canvas.translate(-centerHorizontal, -tickPositionVertical)
             } else {
                 paint.color = colors[i]
-                canvas.drawCircle(centerHorizontal, tickPositionVertical, tickSize, paint)
+                canvas.drawCircle(centerHorizontal, tickPositionVertical, tickSizeScaled, paint)
             }
             canvas.rotate(angleBetweenColors, centerHorizontal, centerVertical)
         }
@@ -110,25 +169,28 @@ class ColorDialView @JvmOverloads constructor(
     /**
      * handles computing for drawable to be drawn in onDraw()
      */
-    private fun refreshValues() {
-        // compute padding values
-        this.totalLeftPadding = (paddingLeft + extraPadding).toFloat()
-        this.totalTopPadding = (paddingTop + extraPadding).toFloat()
-        this.totalRightPadding = (paddingRight + extraPadding).toFloat()
-        this.totalBottomPadding = (paddingBottom + extraPadding).toFloat()
+    private fun refreshValues(withScale: Boolean) {
+        // if true set this var to the member scale value as set as 1f
+        val localeScale = if(withScale) scale else 1f
 
+        // compute padding values
+        this.totalLeftPadding = paddingLeft + extraPadding * localeScale
+        this.totalTopPadding = paddingTop + extraPadding * localeScale
+        this.totalRightPadding = paddingRight + extraPadding * localeScale
+        this.totalBottomPadding = paddingBottom + extraPadding * localeScale
 
         //Computer Helper val
         this.horizontalSize =
-            paddingLeft + paddingRight + (extraPadding * 2) + dialDiameter.toFloat()
-        this.verticalSize = paddingTop + paddingBottom + (extraPadding * 2) + dialDiameter.toFloat()
+            paddingLeft + paddingRight + (extraPadding * localeScale * 2) + dialDiameter * localeScale
+        this.verticalSize = paddingTop + paddingBottom + (extraPadding * localeScale * 2) + dialDiameter * localeScale
 
         // computer the half way point or center in each dim
-        this.tickPositionVertical = paddingTop + extraPadding / 2f
+        this.tickPositionVertical = paddingTop + extraPadding * localeScale / 2f
         this.centerHorizontal =
             totalLeftPadding + (horizontalSize - totalLeftPadding - totalRightPadding) / 2f
         this.centerVertical =
             totalTopPadding + (verticalSize - totalTopPadding - totalBottomPadding) / 2f
+        this.tickSizeScaled = tickSize * localeScale
     }
 
     /**
