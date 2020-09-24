@@ -61,11 +61,11 @@
         android:id="@+id/commentsList"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="130dp"
+        android:layout_marginTop="40dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textNoteText" />
+        app:layout_constraintTop_toBottomOf="@+id/colorSelector" />
 
     <TextView
         android:id="@+id/colorSelectorLabel"
@@ -84,16 +84,25 @@
 <!--        app:layout_constraintTop_toBottomOf="@id/colorSelectorLabel"-->
 <!--        app:colors="@array/note_color_array"/>-->
 
-    <com.neo.notekeeperkotlin.ColorSlider
+<!--    <com.neo.notekeeperkotlin.ColorSlider-->
+<!--        android:id="@+id/colorSelector"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginStart="20dp"-->
+<!--        android:layout_marginEnd="20dp"-->
+<!--        android:layout_marginTop="16dp"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/colorSelectorLabel"-->
+<!--        app:colors="@array/note_color_array"/>-->
+
+    <com.neo.notekeeperkotlin.ColorDialView
         android:id="@+id/colorSelector"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/colorSelectorLabel"
-        app:colors="@array/note_color_array"/>
-
+        app:dialDiameter="200dp"
+        app:colors="@array/note_color_array_many"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

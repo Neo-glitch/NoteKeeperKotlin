@@ -8,7 +8,10 @@ import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.util.TypedValue
+import android.view.MotionEvent
+import android.view.MotionEvent.*
 import android.view.View
+import kotlin.math.roundToInt
 
 /**
  * Fully CustomView Class
@@ -29,9 +32,7 @@ class ColorDialView @JvmOverloads constructor(
     // ic_dial drawable member
     private var dialDrawable: Drawable? = null
     private var dialDiameter = toDp(100)
-
-    // drawable to set no color
-    private var noColorDrawable: Drawable? = null
+    private var noColorDrawable: Drawable? = null        // drawable to set no color
 
     private var paint = Paint().also {
         it.color = Color.BLUE
@@ -59,10 +60,16 @@ class ColorDialView @JvmOverloads constructor(
     private var verticalSize = 0f
 
     // pre-computed pos values
-    private var tickPositionVertical =
-        0f                  // how far down from top of View, we draw each tickMark
+    private var tickPositionVertical = 0f     // how far down from top of View, we draw each tickMark
     private var centerHorizontal = 0f
     private var centerVertical = 0f
+
+    //View interaction values(values to handle touch events and making dial rotate)
+    private var dragStartX = 0f    // X cord of touch event
+    private var dragStartY = 0f
+    private var dragging = false
+    private var snapAngle = 0f           // angle move dial move to, based on nearest color to dragging angle
+    private var selectedPosition = 0    // rep current selected pos and use to to rep color in colors list
 
 
     init {
@@ -96,6 +103,40 @@ class ColorDialView @JvmOverloads constructor(
         refreshValues(true)
     }
 
+    // member var used to set the color of the dial to that coming from note object, when opening noteActivity
+    var selectedColorValue: Int = android.R.color.transparent
+    set(value) {
+        val index = colors.indexOf(value)
+        selectedPosition = if(index == -1) 0 else index
+        // e.g if index is 2 and angle btw is 45 deg then angle to snap to is 90 deg making dial to move to val at index
+        snapAngle = (selectedPosition * angleBetweenColors)
+        invalidate()
+    }
+
+    // listener
+    private var listeners: ArrayList<(Int) -> Unit> = arrayListOf()
+
+    // higherOrder func
+    fun addListeners(function: (Int) -> Unit){
+        listeners.add(function)
+    }
+
+
+    /**
+     * runs the lambda functions in the listener
+     */
+    private fun broadcastColorChange(){
+        listeners.forEach {
+            if(selectedPosition > colors.size - 1){
+                // run fun with color index as int passed
+                it(colors[0])
+            } else{
+                it(colors[selectedPosition])
+            }
+        }
+    }
+
+
     /**
      * ret the bounds or rect bound needed to draw an image based on val passed
      */
@@ -104,6 +145,7 @@ class ColorDialView @JvmOverloads constructor(
         val half = ((if (size > 0) size / 2 else 1) * scalar).toInt()
         return Rect(-half, -half, half, half)
     }
+
 
 
     // width and heightMeasureSpec params is width and height ret by the sys to us
@@ -160,6 +202,7 @@ class ColorDialView @JvmOverloads constructor(
             canvas.rotate(angleBetweenColors, centerHorizontal, centerVertical)
         }
         canvas.restoreToCount(saveCount)
+        canvas.rotate(snapAngle, centerHorizontal, centerVertical)
         canvas.translate(centerHorizontal, centerVertical)
         dialDrawable?.draw(canvas)
 
@@ -191,6 +234,70 @@ class ColorDialView @JvmOverloads constructor(
         this.centerVertical =
             totalTopPadding + (verticalSize - totalTopPadding - totalBottomPadding) / 2f
         this.tickSizeScaled = tickSize * localeScale
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        dragStartX = event.x
+        dragStartY = event.y
+        if (event.action == ACTION_DOWN || event.action == ACTION_MOVE) {
+            dragging = true
+
+            //Figure out snap angle
+            if (getSnapAngle(dragStartX, dragStartY)) {
+                broadcastColorChange()
+                // calls onDraw() making view to be redrawn with new values
+                invalidate()
+            }
+        }
+        if (event.action == ACTION_UP) {
+            dragging = false
+        }
+        return true
+    }
+
+
+    /**
+     * compute snap angle i.e angle to rotate dial to to get to the nearest Color tick
+     * ret true when snap angle is diff from colorSelected angle
+     */
+    private fun getSnapAngle(x: Float, y: Float): Boolean{
+        // angle dial is rotated to based on where event occurs in normal cart cord and not android cart
+        var dragAngle = cartesianToPolar(x - horizontalSize / 2, (verticalSize - y) - verticalSize / 2)
+        val nearest: Int = (getNearestAngle(dragAngle) / angleBetweenColors).roundToInt()         // index of nearest color
+        val newAngle: Float = nearest * angleBetweenColors                                        // angle to snap to
+
+        var shouldUpdate = false    // set to true if change in selected angle
+        if(newAngle != snapAngle){
+            shouldUpdate = true
+            selectedPosition = nearest
+        }
+        snapAngle = newAngle
+        return shouldUpdate
+    }
+
+    /**
+     * gets angle of nearest color based on user rotation movement
+     */
+    private fun getNearestAngle(dragAngle: Float): Float{
+        // to account for polar cord starting from RHS and increasing antiClockwise and resolve with our dial drag angle
+        // e.g if dragAngle is 90 in polar cords this will convert it to 0deg i.e useful for our working
+        var adjustedAngle = (360 - dragAngle) + 90
+        while (adjustedAngle > 360) adjustedAngle -= 360
+        return adjustedAngle
+    }
+
+
+    /**
+     * function used to conv cartesian cords of touch on dial to polar cord for rotating dial
+     */
+    private fun cartesianToPolar(x: Float, y: Float): Float {
+        var angle = Math.toDegrees((Math.atan2(y.toDouble(), x.toDouble()))).toFloat()
+        return when(angle){
+            in 0..180 -> angle
+            in -180..0 -> angle + 360
+            else -> angle
+        }
+
     }
 
     /**

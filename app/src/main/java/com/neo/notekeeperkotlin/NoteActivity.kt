@@ -59,7 +59,10 @@ class NoteActivity : AppCompatActivity() {
 //            noteColor = color
 //        }
 
-        colorSelector.addListener {
+//        colorSelector.addListener {
+//            noteColor = it
+//        }
+        colorSelector.addListeners {
             noteColor = it
         }
 
