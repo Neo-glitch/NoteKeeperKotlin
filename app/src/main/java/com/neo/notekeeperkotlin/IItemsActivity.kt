@@ -1,19 +1,18 @@
 package com.neo.notekeeperkotlin
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -23,14 +22,19 @@ import kotlinx.android.synthetic.main.activity_items.*
 import kotlinx.android.synthetic.main.activity_main.toolbar
 import kotlinx.android.synthetic.main.activity_note_list.*
 import kotlinx.android.synthetic.main.content_note_list.*
+import kotlinx.android.synthetic.main.layout_settings_toolbar.*
 
 
 /**
  * shows list of notes along and houses the navDrawer
  */
-class ItemsActivity : AppCompatActivity(),
+class IItemsActivity : AppCompatActivity(),
     NavigationView.OnNavigationItemSelectedListener,
-    NoteRecyclerAdapter.OnNoteSelectedListener {
+    NoteRecyclerAdapter.OnNoteSelectedListener,
+    IItems {
+
+    private val TAG = "ItemsActivity"
+    private var settingsFragment: SettingsFragment? = null
 
 
     private val noteLayoutManager by lazy {
@@ -102,9 +106,11 @@ class ItemsActivity : AppCompatActivity(),
             val nm = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
             // creates the notif channel
-            val channel = NotificationChannel(ReminderNotification.REMINDER_CHANNEL,
+            val channel = NotificationChannel(
+                ReminderNotification.REMINDER_CHANNEL,
                 "NoteReminders",    // what user will see when comm with notif channel in appSettings
-                NotificationManager.IMPORTANCE_DEFAULT)
+                NotificationManager.IMPORTANCE_DEFAULT
+            )
             nm.createNotificationChannel(channel)
 
         }
@@ -145,6 +151,22 @@ class ItemsActivity : AppCompatActivity(),
         } else {
             super.onBackPressed()
         }
+
+        correctSettingsToolbarVisibility()
+    }
+
+
+    // fun hides settings toolbar if settings fragment is visible when it's called, else it show it
+    private fun correctSettingsToolbarVisibility() {
+        if(settingsFragment != null){
+            if(settingsFragment!!.isVisible){
+                showSettingsAppBar()
+            } else{
+                hideSettingsAppBar()
+            }
+            return
+        }
+        hideSettingsAppBar()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -157,10 +179,33 @@ class ItemsActivity : AppCompatActivity(),
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            R.id.action_settings -> {
+                inflateSettingsFragment()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun inflateSettingsFragment() {
+        // inflates the settings fragment into the container
+        Log.d(TAG, "inflating settings fragment")
+        if (settingsFragment == null) {
+            settingsFragment = SettingsFragment()
+        }
+        var transaction = fragmentManager.beginTransaction()
+            .replace(R.id.settings_container, settingsFragment, FRAGMENT_SETTINGS)
+        transaction.addToBackStack(FRAGMENT_SETTINGS)
+        transaction.commit()
+    }
+
+    override fun showSettingsAppBar() {
+        settings_app_bar.visibility = View.VISIBLE
+    }
+
+    override fun hideSettingsAppBar() {
+        settings_app_bar.visibility = View.GONE
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -211,4 +256,6 @@ class ItemsActivity : AppCompatActivity(),
     private fun handleSelection(message: String) {
         Snackbar.make(listItems, message, Snackbar.LENGTH_LONG).show()
     }
+
+
 }

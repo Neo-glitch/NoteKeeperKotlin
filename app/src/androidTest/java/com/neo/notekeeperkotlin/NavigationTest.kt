@@ -1,32 +1,24 @@
 package com.neo.notekeeperkotlin
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.runner.AndroidJUnitRunner
-import org.junit.Assert.*
 import org.junit.runner.RunWith
-import org.junit.runner.Runner
 
 // imports added manually for automated ui tests
 import androidx.test.espresso.Espresso.*
 import androidx.test.espresso.matcher.ViewMatchers.*
-import org.hamcrest.Matchers.*
 import androidx.test.espresso.action.ViewActions.*
 import androidx.test.rule.ActivityTestRule
 import org.junit.Rule
-import com.neo.notekeeperkotlin.*
-import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
-import org.hamcrest.Matchers
 import androidx.test.espresso.assertion.ViewAssertions.*
 import org.junit.Test
 import androidx.test.espresso.contrib.*
-import com.google.android.material.navigation.NavigationView
 
 
 @RunWith(AndroidJUnit4::class)
 class NavigationTest{
 
     @Rule @JvmField
-    val itemsActivity = ActivityTestRule(ItemsActivity::class.java)
+    val itemsActivity = ActivityTestRule(IItemsActivity::class.java)
 
 
     // verify the behaviour of RV after user makes selection in nav drawer # checks that rv behaves well
