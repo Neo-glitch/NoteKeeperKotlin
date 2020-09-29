@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_account.*
 import kotlinx.android.synthetic.main.layout_account_toolbar.*
 import java.util.*
@@ -32,10 +33,12 @@ import com.neo.notekeeperkotlin.PreferenceHelper.get
  * fragment housing user details, pops up when account pref in settings fragment is clicked
  */
 class AccountFragment : Fragment(),
-        View.OnClickListener
+        View.OnClickListener,
+        SharedPreferences.OnSharedPreferenceChangeListener
 {
     private val TAG = "AccountFragment"
 
+    private var isRunning: Boolean = false
     private var selectedImageUri: Uri? = null
     private var permissions: Boolean = false
     private var iItems: IItems? = null
@@ -56,6 +59,61 @@ class AccountFragment : Fragment(),
         initPermissions()
         enablePhotoSelection()
     }
+
+    override fun onSharedPreferenceChanged(p0: SharedPreferences?, key: String?) {
+        // listens for change to sharedPref obj key values
+        when(key){
+            PREFERENCES_NAME -> updatePreferenceSuccess(PREFERENCES_NAME)
+            PREFERENCES_USERNAME -> updatePreferenceSuccess(PREFERENCES_USERNAME)
+            PREFERENCES_PHONE_NUMBER -> updatePreferenceSuccess(PREFERENCES_PHONE_NUMBER)
+            PREFERENCES_EMAIL -> updatePreferenceSuccess(PREFERENCES_EMAIL)
+            PREFERENCES_GENDER -> updatePreferenceSuccess(PREFERENCES_GENDER)
+            PREFERENCES_PROFILE_IMAGE -> updatePreferenceSuccess(PREFERENCES_PROFILE_IMAGE)
+        }
+    }
+
+    fun updatePreferenceSuccess(key: String?){
+        showProgressBar()
+
+        // Simulate uploading the new data to server
+        if(!isRunning){
+
+            // If this was a real application we would send the updates to server here
+            simulateUploadToServer()
+
+            Snackbar.make(requireView(), "sending updates to server", Snackbar.LENGTH_SHORT).show()
+            printToLog("successfully updated shared preferences. key: " + key)
+        }
+    }
+
+    private fun simulateUploadToServer(){
+        val handler = Handler()
+        val start: Long = System.currentTimeMillis()
+        val runnable: Runnable = object: Runnable{
+            override fun run() {
+                handler.postDelayed(this, 100)
+                isRunning = true
+                val now: Long = System.currentTimeMillis()
+                val difference: Long = now - start
+                if(difference >= 1000){
+                    printToLog("update finished")
+                    updateFinished()
+                    // stops runnable
+                    handler.removeCallbacks(this)
+                    isRunning = false
+                }
+            }
+        }
+        // runs the handler on the UI thread(not best though)
+        requireActivity().runOnUiThread(runnable)
+    }
+
+    private fun updateFinished(){
+        hideProgressBar()
+        selectedImageUri = null
+    }
+
+
 
     private fun initPermissions(){
         if (!permissions) {
@@ -251,6 +309,8 @@ class AccountFragment : Fragment(),
     private fun printToLog(message: String?){
         Log.d(TAG, message)
     }
+
+
 }
 
 

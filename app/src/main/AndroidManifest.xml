@@ -35,10 +35,10 @@
         <activity
             android:name=".NoteActivity"
             android:label="Edit Note"
-            android:parentActivityName=".IItemsActivity"
+            android:parentActivityName=".ItemsActivity"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
-            android:name=".IItemsActivity"
+            android:name=".ItemsActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

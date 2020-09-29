@@ -18,7 +18,7 @@ import androidx.test.espresso.contrib.*
 class NavigationTest{
 
     @Rule @JvmField
-    val itemsActivity = ActivityTestRule(IItemsActivity::class.java)
+    val itemsActivity = ActivityTestRule(ItemsActivity::class.java)
 
 
     // verify the behaviour of RV after user makes selection in nav drawer # checks that rv behaves well

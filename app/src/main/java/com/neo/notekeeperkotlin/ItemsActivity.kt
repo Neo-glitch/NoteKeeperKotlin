@@ -29,7 +29,7 @@ import kotlinx.android.synthetic.main.layout_settings_toolbar.*
 /**
  * shows list of notes along and houses the navDrawer
  */
-class IItemsActivity : AppCompatActivity(),
+class ItemsActivity : AppCompatActivity(),
     NavigationView.OnNavigationItemSelectedListener,
     NoteRecyclerAdapter.OnNoteSelectedListener,
     IItems,
@@ -184,14 +184,14 @@ class IItemsActivity : AppCompatActivity(),
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_settings -> {
-                inflateAccountFragment()
+                inflateSettingsFragment()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    private fun inflateAccountFragment(){
+    override fun inflateAccountFragment(){
         if(accountFragment == null){
             accountFragment = AccountFragment()
         }

@@ -10,4 +10,6 @@ interface IItems {
     fun hideSettingsAppBar()
 
     fun onBackPressed()
+
+    fun inflateAccountFragment()
 }
