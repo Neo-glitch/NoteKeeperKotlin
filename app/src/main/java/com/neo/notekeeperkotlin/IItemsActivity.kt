@@ -4,6 +4,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -31,9 +32,11 @@ import kotlinx.android.synthetic.main.layout_settings_toolbar.*
 class IItemsActivity : AppCompatActivity(),
     NavigationView.OnNavigationItemSelectedListener,
     NoteRecyclerAdapter.OnNoteSelectedListener,
-    IItems {
+    IItems,
+    ChangePhotoDialog.OnPhotoReceivedListener {
 
     private val TAG = "ItemsActivity"
+    private var accountFragment: AccountFragment? = null
     private var settingsFragment: SettingsFragment? = null
 
 
@@ -158,10 +161,10 @@ class IItemsActivity : AppCompatActivity(),
 
     // fun hides settings toolbar if settings fragment is visible when it's called, else it show it
     private fun correctSettingsToolbarVisibility() {
-        if(settingsFragment != null){
-            if(settingsFragment!!.isVisible){
+        if (settingsFragment != null) {
+            if (settingsFragment!!.isVisible) {
                 showSettingsAppBar()
-            } else{
+            } else {
                 hideSettingsAppBar()
             }
             return
@@ -181,11 +184,21 @@ class IItemsActivity : AppCompatActivity(),
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.action_settings -> {
-                inflateSettingsFragment()
+                inflateAccountFragment()
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun inflateAccountFragment(){
+        if(accountFragment == null){
+            accountFragment = AccountFragment()
+        }
+        val transaction = supportFragmentManager.beginTransaction()
+        transaction.replace(R.id.account_container, accountFragment!!, FRAGMENT_ACCOUNT)
+        transaction.addToBackStack(FRAGMENT_ACCOUNT)
+        transaction.commit()
     }
 
     private fun inflateSettingsFragment() {
@@ -206,6 +219,10 @@ class IItemsActivity : AppCompatActivity(),
 
     override fun hideSettingsAppBar() {
         settings_app_bar.visibility = View.GONE
+    }
+
+    override fun setImageUri(imageUri: Uri?) {
+        accountFragment!!.setImageUri(imageUri)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
@@ -256,6 +273,8 @@ class IItemsActivity : AppCompatActivity(),
     private fun handleSelection(message: String) {
         Snackbar.make(listItems, message, Snackbar.LENGTH_LONG).show()
     }
+
+
 
 
 }
